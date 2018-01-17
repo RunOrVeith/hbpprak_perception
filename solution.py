@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import cv2
 import numpy as np
 import rospy
@@ -10,7 +12,8 @@ from thread import start_new_thread
 import math
 import thimblerigger_config as tc
 from std_srvs.srv import Trigger, TriggerResponse
-
+from std_msgs.msg import UInt8MultiArray
+from std_msgs.msg import MultiArrayDimension
 
 class RobotMover(object):
 
@@ -65,7 +68,7 @@ class Solver(object):
 
         self.neuron_grid = None
         self.define_neuron_grid = False
-
+        self.activations = rospy.Publisher('/thimblerigger/solution/activations', UInt8MultiArray, queue_size=5)
         self.view = rospy.Subscriber("/icub_model/left_eye_camera/image_raw", sensor_msgs.msg.Image, self.extract_mugs)
 
 
@@ -92,7 +95,42 @@ class Solver(object):
     def allow_define_neuron_grid(self):
         self.define_neuron_grid = True
 
-    def extract_mugs(self, img_msg, contour_thresh=50):
+    def find_neuron_grid(self, contours):
+        x_intervals = [int(self.center_points[0][0] + 0.5 * \
+                        (self.center_points[1][0] - self.center_points[0][0])),
+                       int(self.center_points[1][0] + 0.5 * \
+                        (self.center_points[2][0] - self.center_points[1][0]))]
+
+        y_intervals = []
+        for cnt in contours:
+            (_,y),radius = cv2.minEnclosingCircle(cnt)
+            y_intervals.extend([int(y + 1.5 * radius), int(y - 1.5 * radius)])
+        y_intervals = [min(y_intervals), max(y_intervals)]
+        self.neuron_grid = x_intervals, y_intervals
+        self.define_neuron_grid = False
+
+    def send_grid_neuron_activations(self):
+        locations = np.zeros((3,3))
+        if self.neuron_grid is not None:
+            for center in self.center_points:
+                x_idx = np.searchsorted(self.neuron_grid[0], center[0])
+                y_idx = np.searchsorted(self.neuron_grid[1], center[1])
+                locations[y_idx, x_idx] = 1
+
+        mat = UInt8MultiArray()
+        mat.layout.dim.append(MultiArrayDimension())
+        mat.layout.dim.append(MultiArrayDimension())
+        mat.layout.dim[0].label = "height"
+        mat.layout.dim[1].label = "width"
+        mat.layout.dim[0].size = 3
+        mat.layout.dim[1].size = 3
+        mat.layout.dim[0].stride = 3*3
+        mat.layout.dim[1].stride = 3
+        mat.layout.data_offset = 0
+        mat.data = list(locations.flatten())
+        self.activations.publish(mat)
+
+    def extract_mugs(self, img_msg, contour_thresh=50, visualize=False):
         img = CvBridge().imgmsg_to_cv2(img_msg, "bgr8")
         most_vibrant_channel = np.argmax(img, axis=2)
         img[most_vibrant_channel != 2] = 0
@@ -107,36 +145,24 @@ class Solver(object):
         moments = [cv2.moments(c) for c in contours]
         centers = sorted([(int(M['m10']/M['m00']), int(M['m01']/M['m00'])) for M in moments])
         self.center_points = np.array(centers)
-        for center in centers:
-            cv2.circle(img, center, radius=1, color=(255,0,0), thickness=3 )
 
         if self.define_neuron_grid and self.neuron_grid is None:
-            x_intervals = [int(centers[0][0] + 0.5 * (centers[1][0] - centers[0][0])),
-                           int(centers[1][0] + 0.5 * (centers[2][0] - centers[1][0]))]
+            self.find_neuron_grid(contours)
 
-            y_intervals = []
-            for cnt in contours:
-                (_,y),radius = cv2.minEnclosingCircle(cnt)
-                y_intervals.extend([int(y + 1.5 * radius), int(y - 1.5 * radius)])
-            y_intervals = [min(y_intervals), max(y_intervals)]
-            self.neuron_grid = x_intervals, y_intervals
-            self.define_neuron_grid = False
+        self.send_grid_neuron_activations()
 
-        if self.neuron_grid is not None:
-            locations = np.zeros((3,3))
+
+        if visualize:
+            if self.neuron_grid is not None:
+                for point_x in self.neuron_grid[0]:
+                    cv2.line(img, (point_x, 0), (point_x, img.shape[0]), color=(255, 0, 0))
+                for point_y in self.neuron_grid[1]:
+                    cv2.line(img, (0, point_y), (img.shape[1], point_y), color=(255, 0, 0))
             for center in centers:
-                x_idx = np.searchsorted(self.neuron_grid[0], center[0])
-                y_idx = np.searchsorted(self.neuron_grid[1], center[1])
-                locations[y_idx, x_idx] = 1
-
-
-            for point_x in self.neuron_grid[0]:
-                cv2.line(img, (point_x, 0), (point_x, img.shape[0]), color=(255, 0, 0))
-            for point_y in self.neuron_grid[1]:
-                cv2.line(img, (0, point_y), (img.shape[1], point_y), color=(255, 0, 0))
-        cv2.drawContours(img, contours, -1, (0,255,0), 3)
-        cv2.imshow("Red", img)
-        cv2.waitKey(1)
+                cv2.circle(img, center, radius=1, color=(255,0,0), thickness=3 )
+            cv2.drawContours(img, contours, -1, (0,255,0), 3)
+            cv2.imshow("Red", img)
+            cv2.waitKey(1)
 
     def find_correct_mug_beginning(self):
         self.side_look()
