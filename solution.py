@@ -68,7 +68,7 @@ class Solver(object):
 
         self.neuron_grid = None
         self.define_neuron_grid = False
-        self.activations = rospy.Publisher('/thimblerigger/solution/activations', UInt8MultiArray, queue_size=5)
+        self.activations = rospy.Publisher('/thimblerigger_solver/grid_activations', UInt8MultiArray, queue_size=5)
         self.view = rospy.Subscriber("/icub_model/left_eye_camera/image_raw", sensor_msgs.msg.Image, self.extract_mugs)
 
 
@@ -96,10 +96,10 @@ class Solver(object):
         self.define_neuron_grid = True
 
     def find_neuron_grid(self, contours):
-        x_intervals = [int(self.center_points[0][0] + 0.5 * \
-                        (self.center_points[1][0] - self.center_points[0][0])),
-                       int(self.center_points[1][0] + 0.5 * \
-                        (self.center_points[2][0] - self.center_points[1][0]))]
+        x_intervals = [int(self.center_points[0, 0] + 0.5 * \
+                        (self.center_points[1, 0] - self.center_points[0, 0])),
+                       int(self.center_points[1, 0] + 0.5 * \
+                        (self.center_points[2, 0] - self.center_points[1, 0]))]
 
         y_intervals = []
         for cnt in contours:
@@ -130,7 +130,7 @@ class Solver(object):
         mat.data = list(locations.flatten())
         self.activations.publish(mat)
 
-    def extract_mugs(self, img_msg, contour_thresh=50, visualize=False):
+    def extract_mugs(self, img_msg, contour_thresh=50, visualize=True):
         img = CvBridge().imgmsg_to_cv2(img_msg, "bgr8")
         most_vibrant_channel = np.argmax(img, axis=2)
         img[most_vibrant_channel != 2] = 0
