@@ -96,11 +96,11 @@ class Solver(object):
         self.define_neuron_grid = True
 
     def find_neuron_grid(self, contours):
+        self.center_points.shape == (3, 2)
         x_intervals = [int(self.center_points[0, 0] + 0.5 * \
                         (self.center_points[1, 0] - self.center_points[0, 0])),
                        int(self.center_points[1, 0] + 0.5 * \
                         (self.center_points[2, 0] - self.center_points[1, 0]))]
-
         y_intervals = []
         for cnt in contours:
             (_,y),radius = cv2.minEnclosingCircle(cnt)
@@ -145,6 +145,9 @@ class Solver(object):
         moments = [cv2.moments(c) for c in contours]
         centers = sorted([(int(M['m10']/M['m00']), int(M['m01']/M['m00'])) for M in moments])
         self.center_points = np.array(centers)
+        if self.center_points.shape != (3, 2):
+            self.center_points = None
+            return
 
         if self.define_neuron_grid and self.neuron_grid is None:
             self.find_neuron_grid(contours)
