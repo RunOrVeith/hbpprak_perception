@@ -6,5 +6,5 @@
     <populations population="actors" xsi:type="Range" from="9" to="12"/>
   </brainModel>
   <bodyModel>icub_model/model.sdf</bodyModel>
-  <transferFunction xsi:type="PythonTransferFunction" src="grid_to_brain.py"/>
+  <!--transferFunction xsi:type="PythonTransferFunction" src="grid_to_brain.py"/-->
 </bibi>
