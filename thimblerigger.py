@@ -370,6 +370,7 @@ class Thimblerigger(object):
                 move_into(mug_name, pose_to)
                 if mug_name == self.mug_with_ball:
                     self.mug_with_ball_intermediate_index = new_order.index(mug_name)
+                    print("Changing correct mug index: ", self.mug_with_ball_intermediate_index)
 
 
         # Update the current order of the mugs

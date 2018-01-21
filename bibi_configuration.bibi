@@ -4,7 +4,12 @@
     <file>brain_model/thimble_brain.py</file>
     <populations population="sensors" xsi:type="Range" from="0" to="9"/>
     <populations population="actors" xsi:type="Range" from="9" to="12"/>
+    <populations population="record" xsi:type="Range" from="0" to="12"/>
   </brainModel>
   <bodyModel>icub_model/model.sdf</bodyModel>
-  <!--transferFunction xsi:type="PythonTransferFunction" src="grid_to_brain.py"/-->
+  <transferFunction xsi:type="Neuron2Monitor" name="all_neurons_spike_monitor">
+   <device name="all_neurons" type="SpikeRecorder">
+     <neurons xsi:type="Range" population="record" from="0" to="12" step="1"/>
+   </device>
+  </transferFunction>
 </bibi>
