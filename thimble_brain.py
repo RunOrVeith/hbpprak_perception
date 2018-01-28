@@ -47,6 +47,11 @@ def create_brain():
     #Grid to output, per row
     """sim.Projection(presynaptic_population=neurons,
                    postsynaptic_population=neurons,
+                   connector=sim.AllToAllConnector(),
+                   synapse_type=sim.StaticSynapse(weight=1.0),
+                   receptor_type='excitatory')"""
+    """sim.Projection(presynaptic_population=neurons,
+                   postsynaptic_population=neurons,
                    connector=sim.FromListConnector([(0, 9), (3, 9), (6, 9),
                                                     (1, 10), (4, 10), (7, 10),
                                                     (2, 11), (5, 11), (8, 11)]),
@@ -54,30 +59,30 @@ def create_brain():
                    receptor_type='excitatory')"""
     sim.Projection(presynaptic_population=neurons[0:3],
                    postsynaptic_population=neurons[9:12],
-                   connector=sim.AllToAllConnector(),
+                   connector=sim.OneToOneConnector(),
                    synapse_type=sim.StaticSynapse(weight=1.0),
                    receptor_type='excitatory')
 
     sim.Projection(presynaptic_population=neurons[3:6],
                postsynaptic_population=neurons[9:12],
-               connector=sim.AllToAllConnector(),
+               connector=sim.OneToOneConnector(),
                synapse_type=sim.StaticSynapse(weight=1.0),
                receptor_type='excitatory')
 
     sim.Projection(presynaptic_population=neurons[6:9],
                   postsynaptic_population=neurons[9:12],
-                  connector=sim.AllToAllConnector(),
+                  connector=sim.OneToOneConnector(),
                   synapse_type=sim.StaticSynapse(weight=1.0),
                   receptor_type='excitatory')
 
     # Inhibit between different outputs
-    """sim.Projection(presynaptic_population=neurons,
+    sim.Projection(presynaptic_population=neurons,
                    postsynaptic_population=neurons,
                    connector=sim.FromListConnector([(9, 10), (9, 11),
                                                     (10, 9), (10, 11),
                                                     (11, 10), (11, 9)]),
                    synapse_type=sim.StaticSynapse(weight=1.0),
-                   receptor_type='inhibitory')"""
+                   receptor_type='inhibitory')
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
     return neurons
