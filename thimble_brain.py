@@ -81,7 +81,7 @@ def create_brain():
                    connector=sim.FromListConnector([(9, 10), (9, 11),
                                                     (10, 9), (10, 11),
                                                     (11, 10), (11, 9)]),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
+                   synapse_type=sim.StaticSynapse(weight=2.0),
                    receptor_type='inhibitory')
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
