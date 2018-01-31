@@ -24,67 +24,42 @@ def create_brain():
                     'tau_syn_E': 2.5,
                     'tau_syn_I': 2.5}
 
-    SYNAPSE_PARAMS = {"weight": 0.5e-4,
-                      "delay": 20.0,
-                      'U': 1.0,
-                      'tau_rec': 1.0,
-                      'tau_facil': 1.0}
-
     cell_class = sim.IF_cond_alpha(**SENSORPARAMS)
 
+    neurons = sim.Population(17, cellclass=cell_class)
 
-    # Define the network structure: 12 neurons
-    # 9 for the grid over the image, 3 for the index
-    neurons = sim.Population(12, cellclass=cell_class)
-    grid = sim.Population(size=9,
-                          cellclass=cell_class)
-    output = sim.Population(size=3,
-                            cellclass=cell_class)
+    xyt = neurons[0:6]
+    sxt = neurons[6:12]
+    normed = neurons[12:15]
+    minxyt_1 = neurons[15:17]
 
-    synapse_type = sim.TsodyksMarkramSynapse(**SYNAPSE_PARAMS)
 
-    # Connect neurons
-    #Grid to output, per row
-    """sim.Projection(presynaptic_population=neurons,
-                   postsynaptic_population=neurons,
-                   connector=sim.AllToAllConnector(),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
-                   receptor_type='excitatory')"""
-    """sim.Projection(presynaptic_population=neurons,
-                   postsynaptic_population=neurons,
-                   connector=sim.FromListConnector([(0, 9), (3, 9), (6, 9),
-                                                    (1, 10), (4, 10), (7, 10),
-                                                    (2, 11), (5, 11), (8, 11)]),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
-                   receptor_type='excitatory')"""
-    sim.Projection(presynaptic_population=neurons[0:3],
-                   postsynaptic_population=neurons[9:12],
+    sim.Projection(presynaptic_population=xyt,
+                   postsynaptic_population=sxt,
                    connector=sim.OneToOneConnector(),
                    synapse_type=sim.StaticSynapse(weight=1.0),
                    receptor_type='excitatory')
 
-    sim.Projection(presynaptic_population=neurons[3:6],
-               postsynaptic_population=neurons[9:12],
-               connector=sim.OneToOneConnector(),
+    sim.Projection(presynaptic_population=mixyt_1,
+                   postsynaptic_population=sxt,
+                   connector=sim.FromListConnector([(0, 0), (0, 2), (0, 4),
+                                                    (1, 1), (1, 3), (1, 5)]),
+                   synapse_type=sim.StaticSynapse(weight=1.0),
+                   receptor_type='inhibitory')
+
+    sim.Projection(presynaptic_population=sxt,
+               postsynaptic_population=normed,
+               connector=sim.FromListConnector([(0, 0), (1, 0),
+                                                (2, 1), (3, 1),
+                                                (4, 2), (5, 2)]),
                synapse_type=sim.StaticSynapse(weight=1.0),
                receptor_type='excitatory')
-
-    sim.Projection(presynaptic_population=neurons[6:9],
-                  postsynaptic_population=neurons[9:12],
-                  connector=sim.OneToOneConnector(),
-                  synapse_type=sim.StaticSynapse(weight=1.0),
-                  receptor_type='excitatory')
-
-    # Inhibit between different outputs
-    sim.Projection(presynaptic_population=neurons,
-                   postsynaptic_population=neurons,
-                   connector=sim.FromListConnector([(9, 10), (9, 11),
-                                                    (10, 9), (10, 11),
-                                                    (11, 10), (11, 9)]),
-                   synapse_type=sim.StaticSynapse(weight=2.0),
-                   receptor_type='inhibitory')
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
     return neurons
 
 circuit = create_brain()
+xyt = circuit[0:6]
+sxt = circuit[6:12]
+normed = circuit[12:15]
+minxyt_1 = circuit[15:17]
