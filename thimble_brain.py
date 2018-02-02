@@ -20,18 +20,19 @@ def create_brain():
                     'e_rev_I': -75.0,
                     'v_reset': -60.5,
                     'v_thresh': -60.0,
-                    'tau_refrac': 10.0,
+                    'tau_refrac': 0.1,
                     'tau_syn_E': 2.5,
                     'tau_syn_I': 2.5}
 
     cell_class = sim.IF_cond_alpha(**SENSORPARAMS)
 
-    neurons = sim.Population(17, cellclass=cell_class)
+    neurons = sim.Population(20, cellclass=cell_class)
 
     xyt = neurons[0:6]
     sxt = neurons[6:12]
     normed = neurons[12:15]
     minxyt_1 = neurons[15:17]
+    greens = neurons[17:20]
 
 
     sim.Projection(presynaptic_population=xyt,
@@ -40,7 +41,7 @@ def create_brain():
                    synapse_type=sim.StaticSynapse(weight=1.0),
                    receptor_type='excitatory')
 
-    sim.Projection(presynaptic_population=mixyt_1,
+    sim.Projection(presynaptic_population=minxyt_1,
                    postsynaptic_population=sxt,
                    connector=sim.FromListConnector([(0, 0), (0, 2), (0, 4),
                                                     (1, 1), (1, 3), (1, 5)]),
@@ -55,6 +56,12 @@ def create_brain():
                synapse_type=sim.StaticSynapse(weight=1.0),
                receptor_type='excitatory')
 
+    """sim.Projection(presynaptic_population=greens,
+                   postsynaptic_population=greens,
+                   connector=sim.AllToAllConnector(allow_self_connections=False),
+                   synapse_type=sim.StaticSynapse(weight=1.0),
+                   receptor_type="inhibitory")"""
+
     sim.initialize(neurons, v=neurons.get('v_rest'))
     return neurons
 
@@ -63,3 +70,4 @@ xyt = circuit[0:6]
 sxt = circuit[6:12]
 normed = circuit[12:15]
 minxyt_1 = circuit[15:17]
+greens = circuit[17:20]
