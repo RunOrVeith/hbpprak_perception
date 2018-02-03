@@ -24,7 +24,13 @@ def create_brain():
                     'tau_syn_E': 2.5,
                     'tau_syn_I': 2.5}
 
-    cell_class = sim.IF_cond_alpha(**SENSORPARAMS)
+    depressing_syn = sim.TsodyksMarkramSynapse(U=0.5, tau_rec=800.0, tau_facil=0.0,
+                                               weight=0.01, delay=0.1)
+    facilitating_syn = sim.TsodyksMarkramSynapse(U=0.5, tau_rec=800.0,
+                                                 tau_facil=1000.0, weight=0.01,
+                                                 delay=0.1)
+
+    cell_class = sim.IF_cond_exp(**SENSORPARAMS)
 
     neurons = sim.Population(20, cellclass=cell_class)
 
@@ -38,29 +44,23 @@ def create_brain():
     sim.Projection(presynaptic_population=xyt,
                    postsynaptic_population=sxt,
                    connector=sim.OneToOneConnector(),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
+                   synapse_type=facilitating_syn,
                    receptor_type='excitatory')
 
     sim.Projection(presynaptic_population=minxyt_1,
                    postsynaptic_population=sxt,
                    connector=sim.FromListConnector([(0, 0), (0, 2), (0, 4),
                                                     (1, 1), (1, 3), (1, 5)]),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
-                   receptor_type='inhibitory')
+                   synapse_type=depressing_syn,
+                   receptor_type='excitatory')
 
     sim.Projection(presynaptic_population=sxt,
                postsynaptic_population=normed,
                connector=sim.FromListConnector([(0, 0), (1, 0),
                                                 (2, 1), (3, 1),
                                                 (4, 2), (5, 2)]),
-               synapse_type=sim.StaticSynapse(weight=1.0),
+               synapse_type=facilitating_syn,
                receptor_type='excitatory')
-
-    """sim.Projection(presynaptic_population=greens,
-                   postsynaptic_population=greens,
-                   connector=sim.AllToAllConnector(allow_self_connections=False),
-                   synapse_type=sim.StaticSynapse(weight=1.0),
-                   receptor_type="inhibitory")"""
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
     return neurons
