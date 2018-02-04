@@ -7,7 +7,24 @@ from hbp_nrp_cle.brainsim import simulator as sim
 import numpy as np
 import logging
 
+
 logger = logging.getLogger(__name__)
+
+def generate_coordinates(rows, cols):
+    x = np.arange(cols)
+    x_only = np.tile(x, (rows, 1))
+
+    y = np.arange(rows)
+    y_only = np.tile(y, (cols, 1))
+    grid = np.stack([x_only, np.transpose(y_only), np.zeros((rows, cols))], axis=-1)
+    grid = grid.reshape((-1, 3))
+    return grid
+
+
+def add_additions(grid, additions):
+
+    return np.append(grid, np.transpose(additions),
+                     axis=0)
 
 def create_brain():
 
@@ -35,30 +52,25 @@ def create_brain():
     retina_neurons = 30, 40
     total_retina = int(np.prod(retina_neurons))
     neurons = sim.Population(11 + total_retina, cellclass=cell_class)
-    coords = np.empty(retina_neurons + (3,), dtype=np.float32)
-    rows = np.arange(retina_neurons[0])
-    cols = np.arange(retina_neurons[1])
-    coords[..., 0 ] = rows[:, None]
-    coords[..., 1] = cols
-    coords[..., 2] = 0
-    positions = np.transpose(coords).reshape((3, -1))
-    positions = np.append(positions, [[-1, -2, -3, -1, -2, -3, -1.5, -2.5, -1, -2, -3],
+
+    additions =  [[-1, -2, -3, -1, -2, -3, -1.5, -2.5, -1, -2, -3],
                                       [0,0,0,1,1,1, 2,2, 3,3,3],
-                                      [0]*11],
-                          axis=-1)
-    neurons.positions = positions
+                                      [0]*11]
+    positions = add_additions(generate_coordinates(*retina_neurons), additions)
+
+    neurons.positions = np.transpose(positions)
     retina = neurons[0:total_retina]
     xyt = neurons[total_retina:total_retina + 3]
     sxt = neurons[total_retina + 3:total_retina + 6]
     minxyt_1 = neurons[total_retina + 6: total_retina + 8]
     greens = neurons[total_retina + 8: total_retina + 11]
 
-    """sim.Projection(presynaptic_population=retina,
+    sim.Projection(presynaptic_population=retina,
                    postsynaptic_population=retina,
                    connector=sim.DistanceDependentProbabilityConnector("d<1.5"),  # Connect all neurons in the neighborhood
                    space=sim.Space("xyz"),
                    synapse_type=sim.StaticSynapse(weight=1/8, delay=0.1),
-                   receptor_type="excitatory")"""
+                   receptor_type="excitatory")
 
 
     sim.Projection(presynaptic_population=xyt,
