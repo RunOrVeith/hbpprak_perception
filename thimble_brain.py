@@ -32,12 +32,33 @@ def create_brain():
 
     cell_class = sim.IF_cond_exp(**SENSORPARAMS)
 
-    neurons = sim.Population(11, cellclass=cell_class)
+    retina_neurons = 30, 40
+    total_retina = int(np.prod(retina_neurons))
+    neurons = sim.Population(11 + total_retina, cellclass=cell_class)
+    coords = np.empty(retina_neurons + (3,), dtype=np.float32)
+    rows = np.arange(retina_neurons[0])
+    cols = np.arange(retina_neurons[1])
+    coords[..., 0 ] = rows[:, None]
+    coords[..., 1] = cols
+    coords[..., 2] = 0
+    positions = np.transpose(coords).reshape((3, -1))
+    positions = np.append(positions, [[-1, -2, -3, -1, -2, -3, -1.5, -2.5, -1, -2, -3],
+                                      [0,0,0,1,1,1, 2,2, 3,3,3],
+                                      [0]*11],
+                          axis=-1)
+    neurons.positions = positions
+    retina = neurons[0:total_retina]
+    xyt = neurons[total_retina:total_retina + 3]
+    sxt = neurons[total_retina + 3:total_retina + 6]
+    minxyt_1 = neurons[total_retina + 6: total_retina + 8]
+    greens = neurons[total_retina + 8: total_retina + 11]
 
-    xyt = neurons[0:3]
-    sxt = neurons[3:6]
-    minxyt_1 = neurons[6:8]
-    greens = neurons[8:11]
+    """sim.Projection(presynaptic_population=retina,
+                   postsynaptic_population=retina,
+                   connector=sim.DistanceDependentProbabilityConnector("d<1.5"),  # Connect all neurons in the neighborhood
+                   space=sim.Space("xyz"),
+                   synapse_type=sim.StaticSynapse(weight=1/8, delay=0.1),
+                   receptor_type="excitatory")"""
 
 
     sim.Projection(presynaptic_population=xyt,
@@ -53,10 +74,11 @@ def create_brain():
                    receptor_type='excitatory')
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
-    return neurons
+    return neurons, total_retina
 
-circuit = create_brain()
-xyt = circuit[0:3]
-sxt = circuit[3:6]
-minxyt_1 = circuit[6:8]
-greens = circuit[8:11]
+circuit, total_retina = create_brain()
+retina = circuit[0:total_retina]
+xyt = circuit[total_retina:total_retina + 3]
+sxt = circuit[total_retina + 3:total_retina + 6]
+minxyt_1 = circuit[total_retina + 6:total_retina + 8]
+greens = circuit[total_retina + 8:total_retina + 11]
