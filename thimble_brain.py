@@ -18,7 +18,7 @@ def generate_coordinates(rows, cols):
     y_only = np.tile(y, (cols, 1))
     grid = np.stack([x_only, np.transpose(y_only), np.zeros((rows, cols))], axis=-1)
     grid = grid.reshape((-1, 3))
-    return grid
+    return grid[::-1, :]
 
 
 def add_additions(grid, additions):
@@ -65,12 +65,12 @@ def create_brain():
     minxyt_1 = neurons[total_retina + 6: total_retina + 8]
     greens = neurons[total_retina + 8: total_retina + 11]
 
-    sim.Projection(presynaptic_population=retina,
+    """sim.Projection(presynaptic_population=retina,
                    postsynaptic_population=retina,
                    connector=sim.DistanceDependentProbabilityConnector("d<1.5"),  # Connect all neurons in the neighborhood
                    space=sim.Space("xyz"),
                    synapse_type=sim.StaticSynapse(weight=1/8, delay=0.1),
-                   receptor_type="excitatory")
+                   receptor_type="excitatory")"""
 
 
     sim.Projection(presynaptic_population=xyt,
