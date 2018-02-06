@@ -6,7 +6,7 @@
   <bodyModel>icub_model/model.sdf</bodyModel>
   <transferFunction xsi:type="Neuron2Monitor" name="all_neurons_spike_monitor">
    <device name="all_neurons" type="SpikeRecorder">
-     <neurons xsi:type="Range" population="circuit" from="0" to="1211" step="1"/>
+     <neurons xsi:type="Range" population="circuit" from="0" to="6" step="1"/>
    </device>
   </transferFunction>
 </bibi>
