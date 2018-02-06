@@ -53,9 +53,9 @@ def create_brain():
     total_retina = int(np.prod(retina_neurons))
     neurons = sim.Population(11 + total_retina, cellclass=cell_class)
 
-    additions =  [[-1, -2, -3, -1, -2, -3, -1.5, -2.5, -1, -2, -3],
-                                      [0,0,0,1,1,1, 2,2, 3,3,3],
-                                      [0]*11]
+    additions =  [[-1, -2, -3, -1, -2, -3, -1.5, -2.5, 10, 20, 30],
+                  [0, 0, 0, 1, 1, 1, 2, 2, 15, 15, 15],
+                  [0, 0, 0, 0, 0, 0, 0, 0, -5, -5, -5]]
     positions = add_additions(generate_coordinates(*retina_neurons), additions)
 
     neurons.positions = np.transpose(positions)
@@ -72,18 +72,6 @@ def create_brain():
                    synapse_type=sim.StaticSynapse(weight=1/8, delay=0.1),
                    receptor_type="excitatory")"""
 
-
-    sim.Projection(presynaptic_population=xyt,
-                   postsynaptic_population=sxt,
-                   connector=sim.OneToOneConnector(),
-                   synapse_type=facilitating_syn,
-                   receptor_type='excitatory')
-
-    sim.Projection(presynaptic_population=minxyt_1,
-                   postsynaptic_population=sxt,
-                   connector=sim.FromListConnector([(0, 0), (0, 1), (0, 2)]),
-                   synapse_type=depressing_syn,
-                   receptor_type='excitatory')
 
     sim.initialize(neurons, v=neurons.get('v_rest'))
     return neurons, total_retina
