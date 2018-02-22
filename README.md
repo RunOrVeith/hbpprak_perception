@@ -1,10 +1,9 @@
-# Thimblerigger Challenge of the NRP
 
-This repository defines the challenge perception "Thimblerigger".
+
+# Thimblerigger Challenge solution Group 5
+
+This repository solves the "Thimblerigger" perception challenge.
 It is part of the KIT course "Virtual Neurorobotics".
-
-This repo is for the **challenge definition** only, to create a solution
-please fork this repository and implement your solution there.
 
 ## Installing
 

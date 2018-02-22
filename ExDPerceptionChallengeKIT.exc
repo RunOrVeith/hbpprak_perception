@@ -8,6 +8,7 @@
     Track a ball under mugs that are being shuffled around.</description>
     <timeout>600</timeout>
     <configuration type="3d-settings" src="ExDTemplateICub.3ds"/>
+    <configuration type="brainvisualizer" src="layout.json"/>
     <maturity>production</maturity>
     <environmentModel src="empty_world/empty_world.sdf">
         <robotPose x="-0.75" y="0.0" z="0.8" ux="0.0" uy="0.0" uz="1" theta="0.0"/>
